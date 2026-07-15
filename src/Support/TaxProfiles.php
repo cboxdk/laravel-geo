@@ -69,6 +69,19 @@ class TaxProfiles
         // required; the tax engine's India regime labels the components.
         $map['IN'] = new TaxProfile(TaxRegime::Gst, 'in-gst', false, isSubFederal: false, requiresRooftop: false);
 
+        // Additional national VAT regimes — rates verified against primary/dated
+        // authoritative sources. Each maps to the generic national regime.
+        $map['TW'] = new TaxProfile(TaxRegime::Vat, 'tw-vat', false, false, false); // Taiwan
+        $map['AE'] = new TaxProfile(TaxRegime::Vat, 'ae-vat', false, false, false); // United Arab Emirates
+        $map['SA'] = new TaxProfile(TaxRegime::Vat, 'sa-vat', false, false, false); // Saudi Arabia
+        $map['BH'] = new TaxProfile(TaxRegime::Vat, 'bh-vat', false, false, false); // Bahrain
+        $map['OM'] = new TaxProfile(TaxRegime::Vat, 'om-vat', false, false, false); // Oman
+        $map['TR'] = new TaxProfile(TaxRegime::Vat, 'tr-vat', false, false, false); // Türkiye
+        $map['CL'] = new TaxProfile(TaxRegime::Vat, 'cl-iva', false, false, false); // Chile
+        $map['ID'] = new TaxProfile(TaxRegime::Vat, 'id-ppn', false, false, false); // Indonesia
+        $map['VN'] = new TaxProfile(TaxRegime::Vat, 'vn-vat', false, false, false); // Vietnam
+        $map['PH'] = new TaxProfile(TaxRegime::Vat, 'ph-vat', false, false, false); // Philippines
+
         // Sub-federal regimes. Canada stacks at province level (subdivision is
         // enough); the US stacks below the state and needs rooftop geocoding.
         $map['CA'] = new TaxProfile(TaxRegime::Gst, 'ca-gst', false, isSubFederal: true, requiresRooftop: false);
