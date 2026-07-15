@@ -55,13 +55,20 @@ it('models Singapore as a national GST regime', function () {
 });
 
 it('models the additional national VAT jurisdictions', function () {
-    foreach (['TW' => 'tw-vat', 'AE' => 'ae-vat', 'SA' => 'sa-vat', 'TR' => 'tr-vat', 'CL' => 'cl-iva', 'ID' => 'id-ppn', 'PH' => 'ph-vat'] as $country => $module) {
+    foreach (['TW' => 'tw-vat', 'AE' => 'ae-vat', 'SA' => 'sa-vat', 'TR' => 'tr-vat', 'CL' => 'cl-iva', 'ID' => 'id-ppn', 'PH' => 'ph-vat', 'JP' => 'jp-ct', 'KR' => 'kr-vat', 'TH' => 'th-vat', 'UA' => 'ua-vat'] as $country => $module) {
         $profile = TaxProfiles::for(new CountryCode($country));
 
         expect($profile->regime)->toBe(TaxRegime::Vat)
             ->and($profile->regimeModule)->toBe($module)
             ->and($profile->isModeled())->toBeTrue();
     }
+});
+
+it('models Malaysia as an SST (sales-tax) regime, not a VAT', function () {
+    $my = TaxProfiles::for(new CountryCode('MY'));
+
+    expect($my->regime)->toBe(TaxRegime::SalesTax)
+        ->and($my->regimeModule)->toBe('my-sst');
 });
 
 it('denies by default for an unmodelled country', function () {

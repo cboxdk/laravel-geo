@@ -81,6 +81,14 @@ class TaxProfiles
         $map['ID'] = new TaxProfile(TaxRegime::Vat, 'id-ppn', false, false, false); // Indonesia
         $map['VN'] = new TaxProfile(TaxRegime::Vat, 'vn-vat', false, false, false); // Vietnam
         $map['PH'] = new TaxProfile(TaxRegime::Vat, 'ph-vat', false, false, false); // Philippines
+        $map['JP'] = new TaxProfile(TaxRegime::Vat, 'jp-ct', false, false, false);  // Japan (consumption tax)
+        $map['KR'] = new TaxProfile(TaxRegime::Vat, 'kr-vat', false, false, false); // South Korea
+        $map['TH'] = new TaxProfile(TaxRegime::Vat, 'th-vat', false, false, false); // Thailand
+        $map['UA'] = new TaxProfile(TaxRegime::Vat, 'ua-vat', false, false, false); // Ukraine
+
+        // Malaysia — SST (Sales & Service Tax), NOT a VAT: foreign digital providers
+        // charge service tax on both B2B and B2C with no reverse charge. Its own regime.
+        $map['MY'] = new TaxProfile(TaxRegime::SalesTax, 'my-sst', false, false, false);
 
         // Sub-federal regimes. Canada stacks at province level (subdivision is
         // enough); the US stacks below the state and needs rooftop geocoding.
