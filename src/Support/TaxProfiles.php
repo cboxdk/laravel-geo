@@ -62,6 +62,12 @@ class TaxProfiles
         // National GST regimes.
         $map['AU'] = new TaxProfile(TaxRegime::Gst, 'au-gst', false, false, false);
         $map['NZ'] = new TaxProfile(TaxRegime::Gst, 'nz-gst', false, false, false);
+        $map['SG'] = new TaxProfile(TaxRegime::Gst, 'sg-gst', false, false, false);
+
+        // India — dual GST (CGST+SGST intra-state vs IGST inter-state/imports). The
+        // customer-facing rate is uniform across the split, so no subdivision is
+        // required; the tax engine's India regime labels the components.
+        $map['IN'] = new TaxProfile(TaxRegime::Gst, 'in-gst', false, isSubFederal: false, requiresRooftop: false);
 
         // Sub-federal regimes. Canada stacks at province level (subdivision is
         // enough); the US stacks below the state and needs rooftop geocoding.

@@ -39,6 +39,21 @@ it('marks Canada as sub-federal but not rooftop-requiring', function () {
         ->and($ca->requiresRooftop)->toBeFalse();
 });
 
+it('models India as a GST regime with a dedicated module', function () {
+    $in = TaxProfiles::for(new CountryCode('IN'));
+
+    expect($in->regime)->toBe(TaxRegime::Gst)
+        ->and($in->regimeModule)->toBe('in-gst')
+        ->and($in->isSubFederal)->toBeFalse();
+});
+
+it('models Singapore as a national GST regime', function () {
+    $sg = TaxProfiles::for(new CountryCode('SG'));
+
+    expect($sg->regime)->toBe(TaxRegime::Gst)
+        ->and($sg->regimeModule)->toBe('sg-gst');
+});
+
 it('denies by default for an unmodelled country', function () {
     $profile = TaxProfiles::for(new CountryCode('ZZ'));
 
