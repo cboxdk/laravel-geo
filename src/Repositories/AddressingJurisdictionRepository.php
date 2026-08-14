@@ -72,8 +72,25 @@ readonly class AddressingJurisdictionRepository implements JurisdictionRepositor
         $out = [];
 
         foreach ($this->subdivisions->getAll([$country->value]) as $sub) {
+            // getId(), NOT getCode(). The addressing library's `code` is the
+            // POSTAL/display abbreviation — "A Coruña" for Spain, "Hokkaido" for
+            // Japan, "Ags." for Aguascalientes — while `id` is the ISO 3166-2 code
+            // this package is built to speak (ES-C, JP-01, MX-AGU).
+            //
+            // Reading `code` failed in two directions at once, and the second is
+            // the dangerous one. Most values were rejected by the format check and
+            // silently skipped, so Spain returned 0 of its 52 subdivisions. But a
+            // display name that happens to be short and alphanumeric slipped
+            // THROUGH as a plausible-looking invention: Japan's "Mie" became
+            // `JP-MIE`, which is not an ISO code at all — the real one is `JP-24`.
+            $iso = $sub->getId();
+
+            if ($iso === '') {
+                continue;
+            }
+
             try {
-                $code = new SubdivisionCode($country->value.'-'.$sub->getCode());
+                $code = new SubdivisionCode($country->value.'-'.$iso);
             } catch (InvalidSubdivisionCode) {
                 // Not an ISO 3166-2 code we bind selects to; skip it.
                 continue;

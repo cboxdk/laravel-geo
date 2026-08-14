@@ -27,6 +27,22 @@ their *shape* on construction and normalise to upper case. A `SubdivisionCode`
 always carries its parent country, so a state can never be attached to the wrong
 country silently.
 
+Both encode to the code itself, not to the wrapper around it:
+
+```php
+json_encode(new CountryCode('DK'));           // "DK"
+json_encode(new SubdivisionCode('US-CA'));    // "US-CA"
+```
+
+That matters because encoding an object of public readonly properties otherwise
+Just Works, and `{"country":{"value":"DK"}}` would become an API's response shape
+by accident rather than by decision. Nothing is lost — `country` and `code` are
+both derived from the string on the way back in, so the object round-trips through
+its constructor.
+
+A `LocalityCode` stays an object, because it genuinely is one: the coding scheme is
+part of its identity, and flattening it would lose which system the key belongs to.
+
 ## Resolution is deny-by-default
 
 `find()` returns `null` for an unknown country, an unknown subdivision, or a
