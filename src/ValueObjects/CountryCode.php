@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Cbox\Geo\ValueObjects;
 
 use Cbox\Geo\Exceptions\InvalidCountryCode;
+use JsonSerializable;
 use Stringable;
 
 /**
@@ -15,7 +16,7 @@ use Stringable;
  * decided at the repository boundary (deny-by-default): a well-formed but unknown
  * code resolves to `null`, never a guess.
  */
-readonly class CountryCode implements Stringable
+readonly class CountryCode implements JsonSerializable, Stringable
 {
     public string $value;
 
@@ -41,6 +42,20 @@ readonly class CountryCode implements Stringable
     }
 
     public function __toString(): string
+    {
+        return $this->value;
+    }
+
+    /**
+     * `"DK"` on the wire, not `{"value":"DK"}`.
+     *
+     * Encoding an object of public readonly properties Just Works, which is the
+     * problem: without this, the wrapper that exists to keep free text out of the
+     * domain leaks into every payload anything containing a country code is encoded
+     * into. That shape then becomes an API's response format by accident rather
+     * than by decision, and undoing it later is somebody else's broken integration.
+     */
+    public function jsonSerialize(): string
     {
         return $this->value;
     }

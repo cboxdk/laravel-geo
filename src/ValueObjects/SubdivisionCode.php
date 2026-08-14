@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Cbox\Geo\ValueObjects;
 
 use Cbox\Geo\Exceptions\InvalidSubdivisionCode;
+use JsonSerializable;
 use Stringable;
 
 /**
@@ -12,7 +13,7 @@ use Stringable;
  * parent country. Sub-federal tax regimes (US, Canada) resolve against this, so
  * it is always stored bound to a {@see CountryCode} rather than as a bare string.
  */
-readonly class SubdivisionCode implements Stringable
+readonly class SubdivisionCode implements JsonSerializable, Stringable
 {
     public CountryCode $country;
 
@@ -46,6 +47,18 @@ readonly class SubdivisionCode implements Stringable
     }
 
     public function __toString(): string
+    {
+        return $this->value;
+    }
+
+    /**
+     * `"US-CA"` on the wire — the ISO code itself, which is what an integration
+     * expects and what it would have to reassemble otherwise.
+     *
+     * Nothing is lost: `country` and `code` are both derived from this string on
+     * the way back in, so the full form round-trips through the constructor.
+     */
+    public function jsonSerialize(): string
     {
         return $this->value;
     }
