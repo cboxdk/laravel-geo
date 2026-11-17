@@ -6,6 +6,7 @@ namespace Cbox\Geo\Repositories;
 
 use Cbox\Geo\Contracts\JurisdictionRepository;
 use Cbox\Geo\Exceptions\InvalidSubdivisionCode;
+use Cbox\Geo\Support\Iso31662;
 use Cbox\Geo\Support\TaxProfiles;
 use Cbox\Geo\ValueObjects\CountryCode;
 use Cbox\Geo\ValueObjects\Jurisdiction;
@@ -18,7 +19,9 @@ use CommerceGuys\Addressing\Subdivision\SubdivisionRepository;
 
 /**
  * Resolves jurisdictions from the ISO reference data shipped in commerceguys/
- * addressing, layering this package's {@see TaxProfiles} on top. All lookups are
+ * addressing, layering this package's {@see TaxProfiles} on top. find() also
+ * accepts the ISO 3166-2 codes an address form does not use ({@see Iso31662});
+ * subdivisions() lists only the address ones. All lookups are
  * deny-by-default: an unknown country or a subdivision that does not belong to
  * its country returns `null`, never a guess.
  */
@@ -60,11 +63,18 @@ readonly class AddressingJurisdictionRepository implements JurisdictionRepositor
 
         $sub = $this->subdivisions->get($subdivision->code, [$country->value]);
 
-        if ($sub === null) {
-            return null;
+        if ($sub !== null) {
+            return $this->jurisdictionFor($resolved, $subdivision, $sub->getName());
         }
 
-        return $this->jurisdictionFor($resolved, $subdivision, $sub->getName());
+        // The addressing data holds only the subdivisions a postal address uses: no
+        // German Länder, no Spanish autonomous communities (ES-MD, ES-CN). Those are
+        // still real ISO 3166-2 codes, so they resolve from the full list. A
+        // territory with its own country code (FR-GP is Guadeloupe, GP) is not on it:
+        // read as France it would be taxed as France.
+        $name = Iso31662::name($subdivision);
+
+        return $name === null ? null : $this->jurisdictionFor($resolved, $subdivision, $name);
     }
 
     public function subdivisions(CountryCode $country): array

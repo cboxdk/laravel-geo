@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use Cbox\Geo\Contracts\JurisdictionRepository;
+use Cbox\Geo\Support\Iso31662;
 use Cbox\Geo\ValueObjects\CountryCode;
 use Cbox\Geo\ValueObjects\SubdivisionCode;
 
@@ -40,6 +41,59 @@ it('denies an unknown country', function () {
 
 it('denies an unknown subdivision', function () {
     expect($this->repo->find(new CountryCode('US'), new SubdivisionCode('US-ZZ')))->toBeNull();
+});
+
+// The addressing data holds only the subdivisions a postal address uses, so these
+// real ISO 3166-2 codes were denied: Germany and France list none, Spain lists its
+// provinces but not its autonomous communities, Portugal lists none.
+it('resolves an ISO 3166-2 code that no address form uses', function (string $code, string $name) {
+    $j = $this->repo->find(new CountryCode(substr($code, 0, 2)), new SubdivisionCode($code));
+
+    expect($j)->not->toBeNull()
+        ->and($j->subdivision->value)->toBe($code)
+        ->and($j->subdivisionName)->toBe($name);
+})->with([
+    ['DE-BE', 'Berlin'],
+    ['FR-IDF', 'Île-de-France'],
+    ['ES-MD', 'Madrid Autonomous Community'],
+    ['ES-CN', 'Canary Islands'],
+    ['PT-20', 'Azores'],
+]);
+
+it('still denies an abolished or invented ISO-shaped code', function (string $code) {
+    expect($this->repo->find(new CountryCode(substr($code, 0, 2)), new SubdivisionCode($code)))->toBeNull();
+})->with([
+    'DK-015', // Københavns Amt, abolished in 2007
+    'FR-75',  // Paris before it became FR-75C
+    'ES-ZZ',
+    'DE-XX',
+]);
+
+// Guadeloupe is both FR-GP (and FR-971) and the country GP. Resolved as France it
+// would carry France's tax profile, and a sale outside the EU VAT area would be
+// charged French VAT. Denied, with the country code to send instead.
+it('denies a territory that has its own country code, and names that code', function (string $code, string $country) {
+    $subdivision = new SubdivisionCode($code);
+
+    expect($this->repo->find($subdivision->country, $subdivision))->toBeNull()
+        ->and(Iso31662::ownCountry($subdivision)?->value)->toBe($country);
+})->with([
+    ['FR-GP', 'GP'],
+    ['FR-971', 'GP'],
+    ['FR-974', 'RE'],
+    ['FR-NC', 'NC'],
+    ['NL-AW', 'AW'],
+    ['NL-BQ1', 'BQ'],
+    ['FI-01', 'AX'],
+]);
+
+it('names no own country for an ordinary subdivision', function () {
+    expect(Iso31662::ownCountry(new SubdivisionCode('ES-CN')))->toBeNull()
+        ->and(Iso31662::ownCountry(new SubdivisionCode('DE-BE')))->toBeNull();
+});
+
+it('keeps resolving the US territories the address data lists under the US', function () {
+    expect($this->repo->find(new CountryCode('US'), new SubdivisionCode('US-PR')))->not->toBeNull();
 });
 
 it('denies a subdivision that belongs to a different country', function () {

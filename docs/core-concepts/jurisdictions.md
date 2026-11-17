@@ -49,6 +49,30 @@ part of its identity, and flattening it would lose which system the key belongs 
 subdivision that does not belong to the country it is resolved against. It never
 returns a best-guess match — a wrong jurisdiction means a wrong tax outcome.
 
+A subdivision resolves when it is a current ISO 3166-2 code of its country. That is
+wider than `subdivisions()`, which lists what an address form offers: `find()` also
+accepts the codes addresses do not use, such as `DE-BE` (Berlin), `ES-MD` (Comunidad
+de Madrid) and `ES-CN` (Canary Islands). Abolished codes (`DK-015`, the Danish
+counties of 2007) and invented ones (`DE-XX`) stay `null`.
+
+A territory that ISO 3166-1 also codes as a country of its own stays `null` too:
+`FR-GP` and `FR-971` are Guadeloupe (`GP`), `NL-AW` is Aruba (`AW`), `FI-01` is Åland
+(`AX`). Resolved as France, Guadeloupe would carry France's tax profile, and a sale
+outside the EU VAT area would be read as a French one. `Iso31662::ownCountry()`
+names the country code to use instead, so a caller can say so:
+
+```php
+use Cbox\Geo\Support\Iso31662;
+
+Iso31662::ownCountry(new SubdivisionCode('FR-971'))?->value; // "GP"
+```
+
+The US territories the address data lists (`US-PR`, `US-GU`) keep resolving under
+the US, as before.
+
+The full list is `resources/iso-3166-2.php`, generated from a tagged Unicode CLDR
+release by `php bin/build-subdivisions.php release-49`.
+
 ## Sub-federal resolution
 
 `needsSubdivision()` is `true` when a country sets tax below the national level
