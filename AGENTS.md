@@ -26,7 +26,9 @@ models EU territories.
 **`find()` accepts more than `subdivisions()` lists.** The addressing data only has
 the subdivisions a postal address uses; `find()` falls back to the full ISO 3166-2
 list in `resources/iso-3166-2.php`. That file is generated from Unicode CLDR by
-`bin/build-subdivisions.php`; regenerate it, never edit it by hand.
+`bin/build-subdivisions.php`; regenerate it, never edit it by hand. Territories with
+their own ISO 3166-1 code (`FR-GP`, `FR-971`, `NL-AW`, `FI-01`) are deliberately not
+in it: read as their parent country they would be taxed as it.
 
 **Live branch: `main`.** A hardcoded `version` in `composer.json` once made Packagist
 silently skip tags; never add one back.
