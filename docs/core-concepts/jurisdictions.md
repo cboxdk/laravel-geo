@@ -49,6 +49,15 @@ part of its identity, and flattening it would lose which system the key belongs 
 subdivision that does not belong to the country it is resolved against. It never
 returns a best-guess match — a wrong jurisdiction means a wrong tax outcome.
 
+A subdivision resolves when it is a current ISO 3166-2 code of its country. That is
+wider than `subdivisions()`, which lists what an address form offers: `find()` also
+accepts the codes addresses do not use, such as `DE-BE` (Berlin), `ES-MD` (Comunidad
+de Madrid), `ES-CN` (Canary Islands) and `FI-01` (Åland). Abolished codes (`DK-015`,
+the Danish counties of 2007) and invented ones (`DE-XX`) stay `null`.
+
+The full list is `resources/iso-3166-2.php`, generated from a tagged Unicode CLDR
+release by `php bin/build-subdivisions.php release-49`.
+
 ## Sub-federal resolution
 
 `needsSubdivision()` is `true` when a country sets tax below the national level

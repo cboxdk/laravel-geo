@@ -18,7 +18,9 @@ use CommerceGuys\Addressing\Subdivision\SubdivisionRepository;
 
 /**
  * Resolves jurisdictions from the ISO reference data shipped in commerceguys/
- * addressing, layering this package's {@see TaxProfiles} on top. All lookups are
+ * addressing, layering this package's {@see TaxProfiles} on top. find() also
+ * accepts the ISO 3166-2 codes an address form does not use (from Unicode CLDR, in
+ * resources/iso-3166-2.php); subdivisions() lists only the address ones. All lookups are
  * deny-by-default: an unknown country or a subdivision that does not belong to
  * its country returns `null`, never a guess.
  */
@@ -60,11 +62,21 @@ readonly class AddressingJurisdictionRepository implements JurisdictionRepositor
 
         $sub = $this->subdivisions->get($subdivision->code, [$country->value]);
 
-        if ($sub === null) {
+        if ($sub !== null) {
+            return $this->jurisdictionFor($resolved, $subdivision, $sub->getName());
+        }
+
+        // The addressing data holds only the subdivisions a postal address uses: no
+        // German Länder, no Spanish autonomous communities (ES-MD, ES-CN), no Åland
+        // (FI-01). Those are still real ISO 3166-2 codes, so they resolve from the
+        // full list; a code on neither list stays denied.
+        $iso = self::iso31662();
+
+        if (! array_key_exists($subdivision->value, $iso)) {
             return null;
         }
 
-        return $this->jurisdictionFor($resolved, $subdivision, $sub->getName());
+        return $this->jurisdictionFor($resolved, $subdivision, $iso[$subdivision->value]);
     }
 
     public function subdivisions(CountryCode $country): array
@@ -100,6 +112,23 @@ readonly class AddressingJurisdictionRepository implements JurisdictionRepositor
         }
 
         return $out;
+    }
+
+    /**
+     * Every current ISO 3166-2 code with its English name, generated from Unicode
+     * CLDR by bin/build-subdivisions.php.
+     *
+     * @return array<string, ?string>
+     */
+    private static function iso31662(): array
+    {
+        /** @var array<string, ?string>|null $codes */
+        static $codes = null;
+
+        /** @var array<string, ?string> $loaded */
+        $loaded = $codes ??= require __DIR__.'/../../resources/iso-3166-2.php';
+
+        return $loaded;
     }
 
     private function jurisdictionFor(

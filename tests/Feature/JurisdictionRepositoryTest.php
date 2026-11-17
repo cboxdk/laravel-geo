@@ -42,6 +42,34 @@ it('denies an unknown subdivision', function () {
     expect($this->repo->find(new CountryCode('US'), new SubdivisionCode('US-ZZ')))->toBeNull();
 });
 
+// The addressing data holds only the subdivisions a postal address uses, so these
+// real ISO 3166-2 codes were denied: Germany and France list none, Spain lists its
+// provinces but not its autonomous communities, Portugal and Finland list none.
+it('resolves an ISO 3166-2 code that no address form uses', function (string $code, string $name) {
+    $j = $this->repo->find(new CountryCode(substr($code, 0, 2)), new SubdivisionCode($code));
+
+    expect($j)->not->toBeNull()
+        ->and($j->subdivision->value)->toBe($code)
+        ->and($j->subdivisionName)->toBe($name);
+})->with([
+    ['DE-BE', 'Berlin'],
+    ['FR-IDF', 'Île-de-France'],
+    ['ES-MD', 'Madrid Autonomous Community'],
+    ['ES-CN', 'Canary Islands'],
+    ['PT-20', 'Azores'],
+    // CLDR deprecates it in favour of the country code AX; ISO 3166-2 still lists it.
+    ['FI-01', 'Åland Islands'],
+]);
+
+it('still denies an abolished or invented ISO-shaped code', function (string $code) {
+    expect($this->repo->find(new CountryCode(substr($code, 0, 2)), new SubdivisionCode($code)))->toBeNull();
+})->with([
+    'DK-015', // Københavns Amt, abolished in 2007
+    'FR-75',  // Paris before it became FR-75C
+    'ES-ZZ',
+    'DE-XX',
+]);
+
 it('denies a subdivision that belongs to a different country', function () {
     expect($this->repo->find(new CountryCode('US'), new SubdivisionCode('CA-QC')))->toBeNull();
 });

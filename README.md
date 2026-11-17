@@ -16,8 +16,10 @@ bind, mock or replace.
 A tax or billing engine must never fuzzy-match a country name or guess a rate from
 a ZIP. Everything has to bind to a stable, validated jurisdiction key. This package
 provides that key — ISO 3166-1 alpha-2 countries, ISO 3166-2 subdivisions, ISO 4217
-currencies — sourced from the vetted [`commerceguys/addressing`][addr] dataset, with
-one layer added on top: the **tax profile** of each jurisdiction.
+currencies — sourced from the vetted [`commerceguys/addressing`][addr] dataset and,
+for the ISO 3166-2 codes no address form uses (German Länder, Spanish autonomous
+communities, Åland), from [Unicode CLDR][cldr] — with one layer added on top: the
+**tax profile** of each jurisdiction.
 
 ```php
 use Cbox\Geo\Contracts\JurisdictionRepository;
@@ -81,6 +83,8 @@ composer qa    # pint --test, phpstan (level max), pest, license-check, audit
 
 ## License
 
-MIT.
+MIT. `resources/iso-3166-2.php` is generated from Unicode CLDR data, Copyright ©
+Unicode, Inc., under the [Unicode License v3](https://www.unicode.org/license.txt).
 
 [addr]: https://github.com/commerceguys/addressing
+[cldr]: https://cldr.unicode.org
