@@ -87,6 +87,13 @@ it('denies a territory that has its own country code, and names that code', func
     ['FI-01', 'AX'],
 ]);
 
+it('hands the French overseas departments to the EU VAT engine, outside the VAT area', function (string $country) {
+    $place = $this->repo->find(new CountryCode($country));
+
+    expect($place?->taxProfile->regimeModule)->toBe('eu-vat')
+        ->and($place?->taxProfile->isEuMember)->toBeFalse();
+})->with(['GP', 'MQ', 'RE', 'GF', 'YT']);
+
 it('names no own country for an ordinary subdivision', function () {
     expect(Iso31662::ownCountry(new SubdivisionCode('ES-CN')))->toBeNull()
         ->and(Iso31662::ownCountry(new SubdivisionCode('DE-BE')))->toBeNull();

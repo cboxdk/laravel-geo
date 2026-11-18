@@ -53,6 +53,13 @@ class TaxProfiles
             $map[$code] = new TaxProfile(TaxRegime::Vat, 'eu-vat', isEuMember: true, isSubFederal: false, requiresRooftop: false);
         }
 
+        // France's overseas departments. Their own country codes, French all the same, so
+        // the EU VAT engine takes them; what it charges there is laravel-tax's EU territory
+        // model. Not members for VAT: Art. 6(1)(c) of Directive 2006/112/EC.
+        foreach (['GP', 'MQ', 'RE', 'GF', 'YT'] as $code) {
+            $map[$code] = new TaxProfile(TaxRegime::Vat, 'eu-vat', isEuMember: false, isSubFederal: false, requiresRooftop: false);
+        }
+
         // Non-EU national VAT regimes.
         $map['GB'] = new TaxProfile(TaxRegime::Vat, 'uk-vat', false, false, false);
         $map['CH'] = new TaxProfile(TaxRegime::Vat, 'ch-vat', false, false, false);
